@@ -1,0 +1,15 @@
+{
+  "name": "systems-distributed-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/server.ts"
+  },
+  "dependencies": {
+    "fastify": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
