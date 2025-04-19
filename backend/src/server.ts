@@ -1,10 +1,12 @@
 import Fastify from 'fastify';
 import helloRoutes from './routes/hello-routes';
+import authRoutes from './routes/auth-routes';
 import prisma from './database/db';
 
 const app = Fastify();
 
 app.register(helloRoutes, { prefix: "/" });
+app.register(authRoutes, { prefix: "/auth" });
 
 const start = async () => {
     try {
