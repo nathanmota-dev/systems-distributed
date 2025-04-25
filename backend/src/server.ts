@@ -4,6 +4,7 @@ import authRoutes from './routes/auth-routes';
 import prisma from './database/db';
 import courseRoutes from './routes/course-routes';
 import videoRoutes from './routes/video-routes';
+import { connectRabbit } from './utils/rabbit';
 
 const app = Fastify();
 
@@ -16,6 +17,9 @@ const start = async () => {
     try {
         await prisma.$connect();
         console.log('Database connected!');
+
+        await connectRabbit();
+        console.log('RabbitMQ initialized!');
 
         await app.listen({ port: 8080 });
         console.log('Server is running at http://localhost:8080');
