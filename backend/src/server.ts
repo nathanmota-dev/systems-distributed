@@ -3,11 +3,13 @@ import helloRoutes from './routes/hello-routes';
 import authRoutes from './routes/auth-routes';
 import prisma from './database/db';
 import courseRoutes from './routes/course-routes';
+import videoRoutes from './routes/video-routes';
 
 const app = Fastify();
 
 app.register(helloRoutes, { prefix: "/" });
 app.register(courseRoutes, { prefix: "/" });
+app.register(videoRoutes, { prefix: '/' });
 app.register(authRoutes, { prefix: "/auth" });
 
 const start = async () => {
