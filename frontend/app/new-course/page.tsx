@@ -1,78 +1,110 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import SearchBar from "../components/search-bar";
-import CourseList from "../components/card-courses";
-import api from "../api/api";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import api from "@/app/api/api";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import DragAndDropImage from "@/components/drag-and-drop-image";
 
+const formSchema = z.object({
+    title: z.string().min(1, "Título obrigatório"),
+    description: z.string().min(1, "Descrição obrigatória"),
+});
 
-interface CourseFromApi {
-    id: string;
-    title: string;
-    description: string;
-    createdAt: string;
-    teacher: {
-        name: string;
-    };
-    thumbnailUrl: string;
-}
+type FormSchemaType = z.infer<typeof formSchema>;
 
-interface Course extends CourseFromApi {
-    image: string;
-    formattedDate: string;
-}
+export default function AddCourse() {
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormSchemaType>({
+        resolver: zodResolver(formSchema),
+    });
 
-export default function Home() {
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
+    const router = useRouter();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    useEffect(() => {
-        async function fetchCourses() {
-            try {
-                const { data } = await api.get<CourseFromApi[]>("/courses");
-
-                const bucket = process.env.NEXT_PUBLIC_AWS_BUCKET;
-                const region = process.env.NEXT_PUBLIC_AWS_REGION;
-
-                console.log('Env bucket:', process.env.NEXT_PUBLIC_AWS_BUCKET);
-                console.log('Env region:', process.env.NEXT_PUBLIC_AWS_REGION);
-
-                const baseUrl = `https://${bucket}.s3.${region}.amazonaws.com`;
-
-                const withImage: Course[] = data.map((c) => ({
-                    ...c,
-                    image: c.thumbnailUrl
-                        ? `${baseUrl}/${c.thumbnailUrl}`
-                        : "/placeholder.svg?height=200&width=400",
-                    formattedDate: new Date(c.createdAt).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                    }),
-                }));
-
-                console.log("RAW courses from API:", data);
-                console.log("Mapped courses:", withImage);
-
-                setCourses(withImage);
-            } catch (err) {
-                console.error("Erro ao buscar cursos:", err);
+    async function onSubmit(data: FormSchemaType) {
+        try {
+            const teacherId = localStorage.getItem("teacherId");
+            if (!teacherId) {
+                setErrorMessage("Usuário não autenticado.");
+                return;
             }
+
+            if (!selectedFile) {
+                setErrorMessage("Selecione uma imagem para o curso.");
+                return;
+            }
+
+            // 1. Solicita a URL assinada para upload
+            const presignResponse = await api.post("/courses/thumbnail", {
+                fileName: selectedFile.name,
+                fileType: selectedFile.type,
+            });
+
+            const { presignedUrl, key } = presignResponse.data;
+
+            // 2. Faz o upload da imagem direto para o S3
+            await fetch(presignedUrl, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": selectedFile.type,
+                },
+                body: selectedFile,
+            });
+
+            // 3. Cria o curso enviando JSON puro
+            await api.post("/courses", {
+                title: data.title,
+                description: data.description,
+                teacherId,
+                thumbnailUrl: key, // envia o nome da imagem salva
+            });
+
+            router.push("/dashboard"); // redireciona depois de criar
+        } catch (error: any) {
+            console.error(error);
+            setErrorMessage(error.response?.data?.message || "Erro ao adicionar curso");
         }
-
-        fetchCourses();
-    }, []);
-
-    const filtered = courses.filter((c) =>
-        c.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    }
 
     return (
-        <main className="container mx-auto px-4 py-8">
-            <div className="max-w-xl mx-auto mb-12">
-                <SearchBar onSearch={setSearchTerm} />
-            </div>
-            <CourseList courses={filtered} />
-        </main>
+        <div className="min-h-[92vh] flex items-center justify-center p-4">
+            <Card className="w-full max-w-2xl shadow-lg">
+                <CardContent className="p-6 space-y-6">
+                    <h1 className="text-2xl font-bold text-center">Adicionar Novo Curso</h1>
+
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="title">Título do Curso</Label>
+                            <Input id="title" {...register("title")} />
+                            {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Descrição</Label>
+                            <Input id="description" {...register("description")} />
+                            {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Imagem de Capa (Thumbnail)</Label>
+                            <DragAndDropImage onSelectFile={(file: File | null) => setSelectedFile(file)} />
+                        </div>
+
+                        {errorMessage && <p className="text-sm text-red-500 text-center">{errorMessage}</p>}
+
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting ? "Adicionando..." : "Adicionar Curso"}
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

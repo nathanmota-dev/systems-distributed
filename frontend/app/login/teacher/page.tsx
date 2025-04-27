@@ -36,7 +36,7 @@ export default function LoginTeacher() {
 
             localStorage.setItem("teacherId", user.id);
 
-            router.push("/new-course");
+            router.push("/my-courses");
         } catch (error: any) {
             setErrorMessage(error.response?.data?.message || "Erro ao entrar");
         }
