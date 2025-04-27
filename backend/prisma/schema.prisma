@@ -29,6 +29,7 @@ model Course {
   id          String   @id @default(uuid())
   title       String
   description String
+  thumbnailUrl String?
   teacherId   String
   teacher     User     @relation("ProfessorCourses", fields: [teacherId], references: [id])
   videos      Video[]

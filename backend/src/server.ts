@@ -7,8 +7,17 @@ import prisma from './database/db';
 import courseRoutes from './routes/course-routes';
 import videoRoutes from './routes/video-routes';
 import { connectRabbit } from './utils/rabbit';
+import fastifyMultipart from '@fastify/multipart';
 
 const app = Fastify();
+
+app.register(fastifyMultipart, {
+    limits: {
+        fileSize: 10 * 1024 * 1024,
+    },    
+    attachFieldsToBody: 'keyValues',   
+});
+
 
 app.register(helloRoutes, { prefix: "/" });
 app.register(courseRoutes, { prefix: "/" });

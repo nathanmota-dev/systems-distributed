@@ -3,6 +3,7 @@ import prisma from '../database/db';
 export async function createCourse(data: {
     title: string;
     description: string;
+    thumbnailUrl: string;
     teacherId: string;
 }) {
     return prisma.course.create({ data });
@@ -22,7 +23,7 @@ export async function getCourseById(id: string) {
     });
 }
 
-export async function updateCourse(id: string, data: Partial<{ title: string; description: string }>) {
+export async function updateCourse(id: string, data: Partial<{ title?: string; description?: string; thumbnailUrl?: string; }>) {
     return prisma.course.update({ where: { id }, data });
 }
 

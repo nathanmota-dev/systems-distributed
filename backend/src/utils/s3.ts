@@ -19,3 +19,17 @@ export async function generatePresignedUrl(filename: string, fileType: string) {
     const url = await getSignedUrl(s3, command, { expiresIn: 60 });
     return url;
 }
+
+export async function uploadFileToS3(filename: string, file: any) {
+    const buffer = await file.toBuffer();
+
+    await s3.send(new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET!,
+        Key: filename,
+        Body: buffer,
+        ContentType: file.mimetype,
+        ACL: 'public-read'
+    }));
+
+    return `https://${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
+}
