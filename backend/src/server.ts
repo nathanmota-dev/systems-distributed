@@ -1,4 +1,6 @@
 import Fastify from 'fastify';
+import 'dotenv/config';
+import cors from '@fastify/cors';
 import helloRoutes from './routes/hello-routes';
 import authRoutes from './routes/auth-routes';
 import prisma from './database/db';
@@ -15,14 +17,19 @@ app.register(authRoutes, { prefix: "/auth" });
 
 const start = async () => {
     try {
+        await app.register(cors, {
+            origin: process.env.FRONTEND_URL,
+            credentials: true,
+        });
+
         await prisma.$connect();
         console.log('Database connected!');
 
         await connectRabbit();
         console.log('RabbitMQ initialized!');
 
-        await app.listen({ port: 8080 });
-        console.log('Server is running at http://localhost:8080');
+        await app.listen({ port: Number(process.env.PORT) || 8080 });
+        console.log(`Server is running at http://localhost:${process.env.PORT}`);
     } catch (error) {
         console.error(error);
         process.exit(1);
