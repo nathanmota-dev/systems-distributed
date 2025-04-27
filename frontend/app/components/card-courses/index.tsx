@@ -4,12 +4,10 @@ interface Course {
     id: string;
     title: string;
     description: string;
-    createdAt: string;
-    teacher: {
-        name: string;
-    };
+    formattedDate: string;
+    teacher: { name: string };
     image: string;
-}
+  }
 
 interface CourseListProps {
     courses: Course[];
@@ -44,7 +42,7 @@ export default function CourseList({ courses }: CourseListProps) {
                                     Professor: {course.teacher.name}
                                 </span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    {course.createdAt}
+                                    {course.formattedDate}
                                 </span>
                             </div>
                         </div>

@@ -5,7 +5,7 @@ import CourseList from "./components/card-courses";
 import SearchBar from "./components/search-bar";
 import api from "./api/api";
 
-interface Course {
+interface CourseFromApi {
   id: string;
   title: string;
   description: string;
@@ -13,7 +13,12 @@ interface Course {
   teacher: {
     name: string;
   };
+  thumbnailUrl: string;
+}
+
+interface Course extends CourseFromApi {
   image: string;
+  formattedDate: string;
 }
 
 export default function Home() {
@@ -23,29 +28,35 @@ export default function Home() {
   useEffect(() => {
     async function fetchCourses() {
       try {
-        const response = await api.get<Omit<Course, "image">[]>("/courses");
+        const { data } = await api.get<CourseFromApi[]>("/courses");
+        
+        const bucket = process.env.NEXT_PUBLIC_AWS_BUCKET;
+        const region = process.env.NEXT_PUBLIC_AWS_REGION;
+        const baseUrl = `https://${bucket}.s3.${region}.amazonaws.com`;
 
-        const coursesWithImage: Course[] = response.data.map((course) => ({
-          ...course,
-          image: "/placeholder.svg?height=200&width=400",
-          createdAt: new Date(course.createdAt).toLocaleDateString("pt-BR", {
+        const withImage: Course[] = data.map((c) => ({
+          ...c,
+          image: c.thumbnailUrl
+            ? `${baseUrl}/${c.thumbnailUrl}`
+            : "/placeholder.svg?height=200&width=400",
+          formattedDate: new Date(c.createdAt).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "short",
             year: "numeric",
           }),
         }));
 
-        setCourses(coursesWithImage);
-      } catch (error) {
-        console.error("Erro ao buscar cursos:", error);
+        setCourses(withImage);
+      } catch (err) {
+        console.error("Erro ao buscar cursos:", err);
       }
     }
 
     fetchCourses();
   }, []);
 
-  const filteredCourses = courses.filter((course) =>
-    course.title.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = courses.filter((c) =>
+    c.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -53,7 +64,7 @@ export default function Home() {
       <div className="max-w-xl mx-auto mb-12">
         <SearchBar onSearch={setSearchTerm} />
       </div>
-      <CourseList courses={filteredCourses} />
+      <CourseList courses={filtered} />
     </main>
   );
 }

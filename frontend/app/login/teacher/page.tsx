@@ -30,8 +30,13 @@ export default function LoginTeacher() {
 
     async function onSubmit(data: FormSchemaType) {
         try {
-            await api.post("/auth/teacher/login", data);
-            router.push("/dashboard");
+            const response = await api.post("/auth/teacher/login", data);
+
+            const { token, user } = response.data;
+
+            localStorage.setItem("teacherId", user.id);
+
+            router.push("/new-course");
         } catch (error: any) {
             setErrorMessage(error.response?.data?.message || "Erro ao entrar");
         }
