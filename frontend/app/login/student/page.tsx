@@ -31,7 +31,7 @@ export default function LoginStudent() {
     async function onSubmit(data: FormSchemaType) {
         try {
             await api.post("/auth/student/login", data);
-            router.push("/dashboard");
+            router.push("/student-courses");
         } catch (error: any) {
             setErrorMessage(error.response?.data?.message || "Erro ao entrar");
         }
