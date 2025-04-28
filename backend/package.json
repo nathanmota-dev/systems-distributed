@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "ts-node-dev --respawn src/server.ts",
-    "worker": "ts-node-dev src/worker.ts"
+    "worker": "ts-node-dev src/worker.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",
