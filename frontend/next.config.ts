@@ -8,6 +8,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-};
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://18.221.96.240:8080/:path*'
+      }
+    ]
+  },
+}
 
 module.exports = nextConfig;
