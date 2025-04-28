@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { createUser, findUserByEmail } from '../repository/auth-repository';
 import { generateToken } from '../utils/jwt';
-import { Role } from '@prisma/client';
+import { Role } from "../generated/prisma";
 
 export async function registerTeacher(name: string, email: string, password: string) {
     const existing = await findUserByEmail(email);
