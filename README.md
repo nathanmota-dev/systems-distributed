@@ -1,16 +1,17 @@
-# EduStream - Plataforma de Videoaulas com Sistema Distribuído
+# Plataforma de Videoaulas com Sistema Distribuído
 
 Este projeto é uma plataforma de ensino online construída com Node.js, Fastify, RabbitMQ e Amazon S3, com banco de dados PostgreSQL realiza como trabalho final para a disciplina de Sistemas Distribuídos. A seguir está o guia completo para rodar e desenvolver a aplicação.
 
-## 🔧 Como rodar o projeto
+## Como rodar o projeto
 
 ### 1. Rodar o Backend
 ```bash
+cd backend
 npm install
 npm run dev
 ```
 
-### 2. Rodar o RabbitMQ (requisito para filas de eventos)
+### 2. Rodar o RabbitMQ
 ```bash
 docker run -d \
   --hostname rabbitmq \
@@ -29,8 +30,13 @@ Acesse o painel do RabbitMQ:
 npm run worker
 ```
 
+### 4. Rodar o Frontend
+```bash
+cd frontend
+npm run dev
+```
 
-## 🔄 Rotas do Backend (API)
+## Rotas do Backend
 
 | Endpoint                     | Método | Descrição                                      |
 |-----------------------------|--------|------------------------------------------------|
@@ -45,22 +51,8 @@ npm run worker
 
 ---
 
-## 🧭 Rotas do Frontend
-
-Estas são as rotas acessíveis para usuários na aplicação frontend:
-
-| Rota do Frontend       | Descrição                                                   | Backend Consumido              |
-|------------------------|-------------------------------------------------------------|--------------------------------|
-| `/`                    | Página inicial que lista todos os cursos                    | `GET /courses`                 |
-| `/teacher/register`    | Tela de cadastro de professores                             | `POST /auth/teacher/register`  |
-| `/teacher/login`       | Tela de login do professor                                  | `POST /auth/teacher/login`     |
-| `/student/register`    | Tela de cadastro de alunos                                  | `POST /auth/student/register`  |
-| `/student/login`       | Tela de login do aluno                                      | `POST /auth/student/login`     |
-| `/create-course`       | Tela para criação de cursos (professor autenticado)         | `POST /courses`                |
-| `/upload`              | Tela de upload de vídeo (gera presigned URL e envia vídeo)  | `POST /videos/presign`         |
-
-## 🚀 Tecnologias Utilizadas
-- **Node.js + Fastify** (API e servidor HTTP)
-- **RabbitMQ** (Mensageria e processamento assíncrono)
-- **Amazon S3** (Armazenamento de arquivos)
-- **PostgreSQL** (Banco de dados relacional em nuvem)
+## Tecnologias Utilizadas
+- **Node.js + Fastify**
+- **RabbitMQ**
+- **Amazon S3**
+- **PostgreSQL + Neon.tech**
